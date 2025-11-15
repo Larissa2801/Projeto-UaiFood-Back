@@ -81,6 +81,7 @@ model user {
   userType  user_userType @default(CLIENT)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
+  consent   Boolean @default(false)
   address   address?
   order     order[]
 }

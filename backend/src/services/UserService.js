@@ -13,10 +13,12 @@ class UserService {
   // ----------------------------------------------------
 
   async create(userData) {
-    // Implementar lógica de P3: Checar Consentimento aqui
-    // Exemplo: if (!userData.consent) throw new Error("Consentimento obrigatório.");
-
-    // A lógica de hashing está no Repository, o que é aceitável, mas pode ser movida para cá.
+    if (!userData.consent) {
+      // Lançamos um erro específico que pode ser mapeado no Controller
+      throw new Error(
+        "Consentimento: É obrigatório aceitar os termos de privacidade."
+      );
+    }
     return userRepository.create(userData);
   }
 

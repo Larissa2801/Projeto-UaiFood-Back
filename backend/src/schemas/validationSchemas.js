@@ -13,7 +13,14 @@ const userCreateSchema = z.object({
   phone: z
     .string()
     .regex(/^[0-9]{11}$/, "O telefone deve ter 11 dígitos numéricos."),
-  userType: z.enum(["CLIENT", "ADMIN"]).optional().default("CLIENT"),
+  userType: z.enum(["CLIENT", "ADMIN"]).optional().default("CLIENT"), // NOVO: Campo de Consentimento obrigatório e deve ser true
+
+  consent: z
+    .boolean()
+    .refine((val) => val === true, {
+      message: "O consentimento dos termos é obrigatório para o cadastro.",
+    })
+    .optional(), // <--- SINTAXE CORRIGIDA: Adicionado )
 });
 
 const userUpdateSchema = z
@@ -31,9 +38,7 @@ const userUpdateSchema = z
       .optional(),
     userType: z.enum(["CLIENT", "ADMIN"]).optional(),
   })
-  .strip();
-//.strict()
-//.optional();
+  .strip(); // Removido strict().optional() que não eram necessários aqui
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -62,7 +67,7 @@ const itemCreateSchema = z.object({
   description: z.string().min(3, "A descrição do item é obrigatória."),
   unitPrice: z.coerce
     .number()
-    .positive("O preço unitário deve ser um valor positivo."), // <-- CORRIGIDO // categoryId é string (BigInt)
+    .positive("O preço unitário deve ser um valor positivo."),
   categoryId: z
     .string()
     .regex(
@@ -73,7 +78,7 @@ const itemCreateSchema = z.object({
 
 const itemUpdateSchema = z.object({
   description: z.string().min(3).optional(),
-  unitPrice: z.coerce.number().positive().optional(), // <-- CORRIGIDO
+  unitPrice: z.coerce.number().positive().optional(),
   categoryId: z
     .string()
     .regex(/^[1-9]\d*$/, "O ID da categoria deve ser um número válido.")
@@ -93,17 +98,16 @@ const addressUpsertSchema = z.object({
 });
 
 // --- 5. ORDER SCHEMAS ---
-// Esquema para a criação de um item dentro do pedido (orderitem)
 const orderItemSchema = z.object({
   itemId: z.string().regex(/^[1-9]\d*$/, "O ID do item é obrigatório."),
-  quantity: z.coerce.number().int().min(1, "A quantidade mínima é 1."), // <-- CORRIGIDO
+  quantity: z.coerce.number().int().min(1, "A quantidade mínima é 1."),
 });
 
 const orderCreateSchema = z.object({
   userClient: z
     .string()
     .regex(/^[1-9]\d*$/, "O ID do cliente é obrigatório e deve ser numérico."),
-  paymentMethod: z.enum(["CASH", "DEBIT", "CREDIT", "PIX"]), // O array de itens deve conter pelo menos um item
+  paymentMethod: z.enum(["CASH", "DEBIT", "CREDIT", "PIX"]),
   items: z
     .array(orderItemSchema)
     .min(1, "Um pedido deve ter pelo menos um item."),
@@ -115,7 +119,7 @@ const orderUpdateStatusSchema = z.object({
 
 module.exports = {
   userCreateSchema,
-  userUpdateSchema, // <-- FALTAVA ESTE AQUI!
+  userUpdateSchema,
   loginSchema,
   categoryCreateSchema,
   categoryUpdateSchema,
