@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model address {
+  id        BigInt   @id @default(autoincrement())
+  street    String
+  number    String
+  district  String
+  city      String
+  state     String
+  zipCode   String
+  
+  // CORREÇÃO: updatedAt declarado apenas uma vez, com o atributo
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt 
+
+  userId    BigInt   @unique(map: "Address_userId_key")
+  user      user     @relation(fields: [userId], references: [id], map: "Address_userId_fkey")
+}
+
+model category {
+  id          BigInt   @id @default(autoincrement())
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  item        item[]
+}
+
+model item {
+  id          BigInt      @id @default(autoincrement())
+  description String
+  unitPrice   Float
+  createdAt   DateTime    @default(now())
+  updatedAt DateTime @updatedAt
+  categoryId  BigInt
+  category    category    @relation(fields: [categoryId], references: [id], map: "Item_categoryId_fkey")
+  orderitem   orderitem[]
+
+  @@index([categoryId], map: "Item_categoryId_fkey")
+}
+
+model order {
+  id            BigInt              @id @default(autoincrement())
+  paymentMethod order_paymentMethod
+  status        String
+  createdAt     DateTime            @default(now())
+  updatedAt DateTime @updatedAt
+  userClient    BigInt
+  user          user                @relation(fields: [userClient], references: [id], map: "Order_userClient_fkey")
+  orderitem     orderitem[]
+
+  @@index([userClient], map: "Order_userClient_fkey")
+}
+
+model orderitem {
+  id        BigInt   @id @default(autoincrement())
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orderId   BigInt
+  itemId    BigInt
+  item      item     @relation(fields: [itemId], references: [id], map: "OrderItem_itemId_fkey")
+  order     order    @relation(fields: [orderId], references: [id], map: "OrderItem_orderId_fkey")
+
+  @@index([itemId], map: "OrderItem_itemId_fkey")
+  @@index([orderId], map: "OrderItem_orderId_fkey")
+}
+
+model user {
+  id        BigInt        @id @default(autoincrement())
+  name      String
+  email     String  @unique 
+  phone     String
+  password  String
+  userType  user_userType @default(CLIENT)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  address   address?
+  order     order[]
+}
+enum order_paymentMethod {
+  CASH
+  DEBIT
+  CREDIT
+  PIX
+}
+
+enum user_userType {
+  CLIENT
+  ADMIN
+}
