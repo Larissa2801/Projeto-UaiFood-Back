@@ -2,6 +2,14 @@
 const orderService = require("../services/OrderService");
 
 class OrderController {
+  constructor() {
+    // Faz o 'bind' de todos os métodos que serão usados como middlewares/handlers
+    this.create = this.create.bind(this);
+    this.findById = this.findById.bind(this);
+    this.updateStatus = this.updateStatus.bind(this);
+    this.findByUserId = this.findByUserId.bind(this); // O ajuste para a rota problemática
+  }
+
   // [CREATE] - POST /orders
   async create(req, res) {
     try {
@@ -88,4 +96,5 @@ class OrderController {
     }
   }
 }
+
 module.exports = new OrderController();
